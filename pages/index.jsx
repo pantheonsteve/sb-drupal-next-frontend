@@ -4,27 +4,20 @@ import { isMultiLanguage } from '../lib/isMultiLanguage';
 import { getCurrentLocaleStore, globalDrupalStateStores } from '../lib/stores';
 
 import { ArticleGridItem } from '../components/grid';
+import { ArtistGridItem } from '../components/grid';
 import { withGrid } from '@pantheon-systems/nextjs-kit';
 import Image from 'next/image';
 import Layout from '../components/layout';
 
 export default function HomepageTemplate({
 	sortedArticles,
+	sortedArtists,
 	footerMenu,
 	hrefLang,
 	multiLanguage,
 }) {
 	const HomepageHeader = () => (
 		<div className="prose sm:prose-xl mt-20 flex flex-col mx-auto max-w-fit">
-			<h1 className="prose text-4xl text-center h-full">
-				Welcome to{' '}
-				<a
-					className="text-blue-600 no-underline hover:underline"
-					href="https://nextjs.org"
-				>
-					Next.js!
-				</a>
-			</h1>
 
 			<div className="text-2xl">
 				<div className="bg-black text-white rounded flex items-center justify-center p-4">
@@ -41,6 +34,7 @@ export default function HomepageTemplate({
 	);
 
 	const ArticleGrid = withGrid(ArticleGridItem);
+	const ArtistGrid = withGrid(ArtistGridItem);
 
 	return (
 		<Layout footerMenu={footerMenu}>
@@ -55,6 +49,14 @@ export default function HomepageTemplate({
 					<ArticleGrid
 						data={sortedArticles}
 						contentType="articles"
+						multiLanguage={multiLanguage}
+					/>
+				</section>
+				<section>
+					<h3>Artists </h3>
+					<ArtistGrid
+						data={sortedArtists}
+						contentType="artists"
 						multiLanguage={multiLanguage}
 					/>
 				</section>
@@ -89,14 +91,33 @@ export async function getServerSideProps(context) {
 			res: context.res,
 		});
 
+		const artists = await store.getObject({
+			objectName: 'node--artist',
+			params: 'include=field_media_image.field_media_image',
+			refresh: true,
+			res: context.res,
+		});
+
 		if (!articles) {
 			throw new Error(
 				'No articles returned. Make sure the objectName and params are valid!',
 			);
 		}
 
+		if (!artists) {
+			throw new Error(
+				'No artists returned. Make sure the objectName and params are valid!',
+			);
+		}
+
 		const sortedArticles = sortDate({
 			data: articles,
+			key: 'changed',
+			direction: 'desc',
+		});
+
+		const sortedArtists = sortDate({
+			data: artists,
 			key: 'changed',
 			direction: 'desc',
 		});
@@ -108,10 +129,11 @@ export async function getServerSideProps(context) {
 		});
 
 		return {
-			props: { sortedArticles, hrefLang, multiLanguage, footerMenu },
+			props: { sortedArticles, sortedArtists, hrefLang, multiLanguage, footerMenu },
 		};
 	} catch (error) {
 		console.error('Unable to fetch data for articles page: ', error);
+		console.error('Unable to fetch data for artists page: ', error);
 		return {
 			notFound: true,
 		};

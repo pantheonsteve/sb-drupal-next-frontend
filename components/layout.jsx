@@ -8,6 +8,7 @@ export default function Layout({ children, footerMenu, preview = false }) {
 		{ linkText: '📰 Articles', href: '/articles' },
 		{ linkText: '📑 Pages', href: '/pages' },
 		{ linkText: '⚛️ Examples', href: '/examples' },
+		{ linkText: 'Artists', href: '/artists'},
 	];
 	const footerMenuItems = footerMenu?.map(({ title, url, parent }) => ({
 		linkText: title,
