@@ -1,6 +1,8 @@
-import { Footer } from '@pantheon-systems/nextjs-kit';
-import { Header } from '@pantheon-systems/nextjs-kit';
+import Footer from './Footer';
+import Header from './Header';
+import styles from '../styles/Layout.module.css';
 import PreviewRibbon from './preview-ribbon';
+import Showcase from './Showcase';
 
 export default function Layout({ children, footerMenu, preview = false }) {
 	const navItems = [
@@ -19,6 +21,7 @@ export default function Layout({ children, footerMenu, preview = false }) {
 		<div className="min-h-screen max-h-screen min-w-screen max-w-screen flex flex-col overflow-x-hidden">
 			{preview && <PreviewRibbon />}
 			<Header navItems={navItems} />
+			<Showcase />
 			<main className="mb-auto">{children}</main>
 			<Footer footerMenuItems={footerMenuItems}>
 				<span className="mx-auto">

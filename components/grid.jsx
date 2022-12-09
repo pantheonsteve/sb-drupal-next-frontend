@@ -7,6 +7,19 @@ const GradientPlaceholder = () => (
 );
 
 // For use with withGrid
+export const EventGridItem = ({
+	content: event,
+	multiLanguage,
+	locale,
+}) => {
+	return (
+		<Link>
+			<h1>EVENT</h1>
+		</Link>
+	);
+}
+
+// For use with withGrid
 export const ArtistGridItem = ({
 	content: artist, 
 	multiLanguage, 

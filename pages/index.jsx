@@ -5,6 +5,7 @@ import { getCurrentLocaleStore, globalDrupalStateStores } from '../lib/stores';
 
 import { ArticleGridItem } from '../components/grid';
 import { ArtistGridItem } from '../components/grid';
+import { EventGridItem } from '../components/grid';
 import { withGrid } from '@pantheon-systems/nextjs-kit';
 import Image from 'next/image';
 import Layout from '../components/layout';
@@ -12,29 +13,14 @@ import Layout from '../components/layout';
 export default function HomepageTemplate({
 	sortedArticles,
 	sortedArtists,
+	sortedEvents,
 	footerMenu,
 	hrefLang,
 	multiLanguage,
 }) {
-	const HomepageHeader = () => (
-		<div className="prose sm:prose-xl mt-20 flex flex-col mx-auto max-w-fit">
-
-			<div className="text-2xl">
-				<div className="bg-black text-white rounded flex items-center justify-center p-4">
-					Decoupled Drupal on{' '}
-					<Image
-						src="/pantheon.png"
-						alt="Pantheon Logo"
-						width={191}
-						height={60}
-					/>
-				</div>
-			</div>
-		</div>
-	);
-
 	const ArticleGrid = withGrid(ArticleGridItem);
 	const ArtistGrid = withGrid(ArtistGridItem);
+	const EventsGrid = withGrid(EventGridItem);
 
 	return (
 		<Layout footerMenu={footerMenu}>
@@ -44,7 +30,6 @@ export default function HomepageTemplate({
 				languageAlternates={hrefLang || false}
 			/>
 			<>
-				<HomepageHeader />
 				<section>
 					<ArticleGrid
 						data={sortedArticles}
@@ -57,6 +42,14 @@ export default function HomepageTemplate({
 					<ArtistGrid
 						data={sortedArtists}
 						contentType="artists"
+						multiLanguage={multiLanguage}
+					/>
+				</section>
+				<section>
+					<h3>Events</h3>
+					<EventsGrid
+						data={sortedEvents}
+						contentType="events"
 						multiLanguage={multiLanguage}
 					/>
 				</section>
@@ -98,6 +91,13 @@ export async function getServerSideProps(context) {
 			res: context.res,
 		});
 
+		const events = await store.getObject({
+			objectName: 'node--event',
+			params: 'include=field_venue',
+			refresh: true,
+			res: context.res,
+		});
+
 		if (!articles) {
 			throw new Error(
 				'No articles returned. Make sure the objectName and params are valid!',
@@ -110,6 +110,12 @@ export async function getServerSideProps(context) {
 			);
 		}
 
+		if (!events) {
+			throw new Error(
+				'No events returned. Make sure objectName and params are valid!',
+			);
+		}
+
 		const sortedArticles = sortDate({
 			data: articles,
 			key: 'changed',
@@ -118,6 +124,12 @@ export async function getServerSideProps(context) {
 
 		const sortedArtists = sortDate({
 			data: artists,
+			key: 'changed',
+			direction: 'desc',
+		});
+
+		const sortedEvents = sortDate({
+			data: events,
 			key: 'changed',
 			direction: 'desc',
 		});
@@ -134,6 +146,7 @@ export async function getServerSideProps(context) {
 	} catch (error) {
 		console.error('Unable to fetch data for articles page: ', error);
 		console.error('Unable to fetch data for artists page: ', error);
+		console.error('Unable to fetch data for events page: ', error);
 		return {
 			notFound: true,
 		};
